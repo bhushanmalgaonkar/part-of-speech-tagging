@@ -1,10 +1,8 @@
 from functools import reduce
 import numpy as np
 
-from pos_data import read
 
-
-class NaiveBayes:
+class Simple:
     def __init__(self):
         """
         Stores numerical index for each tag
@@ -78,10 +76,3 @@ class NaiveBayes:
 
     def _calculate_transition_2_probability(self, training_data):
         pass
-
-
-train = read('data/bc.train')
-test = read('data/bc.test')
-
-nb = NaiveBayes()
-nb.fit(train)
