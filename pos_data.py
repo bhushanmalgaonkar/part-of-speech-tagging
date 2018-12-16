@@ -27,7 +27,10 @@ def read(filepath):
         return data
 
     with open(filepath) as f:
-        for line in f.readlines():
+        for i, line in enumerate(f.readlines()):
             split = line.lower().split()
+            if len(split) % 2 != 0:
+                raise Exception(
+                    f"Invalid sample on line {i}: Number of words and tags do not match")
             data.append((split[::2], split[1::2]))
     return data
