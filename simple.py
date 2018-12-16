@@ -3,6 +3,13 @@ import numpy as np
 import math
 import random
 
+"""
+Simple model
+
+The tag entirely depends on the word itself, so we can choose tag for a given word such that P(tag|word) is maximum.
+P(tag|word) = P(word|tag) * P(tag), these two probabilities can be calculated from the data
+"""
+
 
 class Simple:
     def __init__(self):
@@ -17,6 +24,11 @@ class Simple:
         e.g. 0: "noun", 1: "adj", ...
         """
         self.tagValue = None
+
+        """
+        Probability that any randomly chosen word will have particular tag, P(tag)
+        """
+        self.tag_probability = None
 
         """
         Emission probability is the probability of having some observed variable given some value of hidden variable.
@@ -43,6 +55,11 @@ class Simple:
         """
         self.transition_2_probability = None
 
+        """
+        Constants
+        """
+        self.MISSING_WORD_PROBABILITY = math.log(10e-9)
+
     def fit(self, X, y):
         # Get all unique tags from training dataset and index both ways
         unique_tags = set()
@@ -52,8 +69,8 @@ class Simple:
         self.tagIndex = {tag: idx for (idx, tag) in enumerate(unique_tags)}
         self.tagValue = {idx: tag for (tag, idx) in self.tagIndex.items()}
 
+        self._calculate_tag_probability(y)
         self._calculate_emission_probability(X, y)
-        # self._calculate_transition_1_probability(X, y)
 
     def predict(self, X):
         result = []
@@ -64,18 +81,43 @@ class Simple:
                 best_tag = None
                 max_prob = -float('inf')
                 for idx in range(len(self.tagIndex)):
-                    if word in self.emission_probability[idx] and self.emission_probability[idx][word] > max_prob:
+                    word_given_tag = self.emission_probability[idx][
+                        word] if word in self.emission_probability[idx] else self.MISSING_WORD_PROBABILITY
+                    prob = word_given_tag + self.tag_probability[idx]
+                    if prob > max_prob:
                         best_tag = self.tagValue[idx]
-                        max_prob = self.emission_probability[idx][word]
+                        max_prob = prob
+
                 # if we couldn't find this word in any of the tags, just return random tag
                 if best_tag is None:
                     best_tag = self.tagValue[random.randint(0, len(self.tagValue)-1)]
+
                 tags.append(best_tag)
             result.append(tags)
         return result
 
+    def _calculate_tag_probability(self, y):
+        count = [0 for _ in range(len(self.tagIndex))]
+
+        # calculate frequency for each word appearing opposite to each tag
+        for tags in y:
+            for tag in tags:
+                count[self.tagIndex[tag]] += 1
+
+        # calculate probability using sum of frequencies of each tag
+        # keep all calculations in log
+        log_total = math.log(sum(count))
+        self.tag_probability = [(math.log(c) - log_total) for c in count]
+
+    """
+    Calculates emission probability: P(Observed|Hidden)
+
+    In this case, it calculates probablity of some word occuring given some tag, P(word|tag)
+    """
+
     def _calculate_emission_probability(self, X, y):
         self.emission_probability = [{} for _ in range(len(self.tagIndex))]
+
         # calculate frequency for each word appearing opposite to each tag
         for idx in range(len(X)):
             for w, t in zip(X[idx], y[idx]):
@@ -89,9 +131,3 @@ class Simple:
             total = sum(self.emission_probability[idx].values())
             self.emission_probability[idx] = {
                 k: (math.log(v) - math.log(total)) for (k, v) in self.emission_probability[idx].items()}
-
-    def _calculate_transition_1_probability(self, training_data):
-        pass
-
-    def _calculate_transition_2_probability(self, training_data):
-        pass

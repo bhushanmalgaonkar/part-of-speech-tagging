@@ -1,3 +1,8 @@
+"""
+Prints different accuracy measures
+"""
+
+
 def print_report(y_actual, y_pred):
     sentences_total = len(y_actual)
     words_total = sum([len(output) for output in y_actual])
@@ -6,7 +11,6 @@ def print_report(y_actual, y_pred):
     words_correct = 0
 
     # variables to track information about sentences fully correctly predicted
-
     """
     Stores sum of length of all sentences predicted fully correctly
     """
