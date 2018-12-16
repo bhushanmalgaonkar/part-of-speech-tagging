@@ -60,6 +60,14 @@ class Simple:
         """
         self.MISSING_WORD_PROBABILITY = math.log(10e-9)
 
+    """
+    Calculates all the probabilities required for the model to predict new sentences
+
+    Input
+    X: list of sentences, where each sentence is list of strings
+    y: list of tags associated with X
+    """
+
     def fit(self, X, y):
         # Get all unique tags from training dataset and index both ways
         unique_tags = set()
@@ -71,6 +79,16 @@ class Simple:
 
         self._calculate_tag_probability(y)
         self._calculate_emission_probability(X, y)
+
+    """
+    Calculates best tag for each word of each sentence using P(tag|word) = P(word|tag) * P(tag)
+
+    Input
+    X: list of sentences, where each sentence is list of strings
+
+    Output
+    list of tags
+    """
 
     def predict(self, X):
         result = []
@@ -95,6 +113,10 @@ class Simple:
                 tags.append(best_tag)
             result.append(tags)
         return result
+
+    """
+    Calculates P(tag) for each tag
+    """
 
     def _calculate_tag_probability(self, y):
         count = [0 for _ in range(len(self.tagIndex))]
