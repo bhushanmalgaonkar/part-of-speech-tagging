@@ -44,18 +44,6 @@ class Simple:
         self.emission_probability = None
 
         """
-        Transition probability 1 is the probability of having some hidden variable next to some other hidden variable.
-        E.g. probablity of verb being followed by noun, P(tag_i|tag_i-1)
-        """
-        self.transition_1_probability = None
-
-        """
-        Transition probability 2 is the probability of having some hidden variable given values of 2 previous hidden variables.
-        E.g. probablity of noun -> verb -> adjective, P(tag_i|tag_i-1, tag_i-2)
-        """
-        self.transition_2_probability = None
-
-        """
         Constants
         """
         self.MISSING_WORD_PROBABILITY = math.log(10e-9)
@@ -101,21 +89,21 @@ class Simple:
                 for idx in range(len(self.tagIndex)):
                     word_given_tag = self.emission_probability[idx][
                         word] if word in self.emission_probability[idx] else self.MISSING_WORD_PROBABILITY
-                    prob = word_given_tag + self.tag_probability[idx]
-                    if prob > max_prob:
+
+                    # P(tag|word) = P(word|tag) * P(tag)
+                    tag_given_word = word_given_tag + self.tag_probability[idx]
+                    if tag_given_word > max_prob:
                         best_tag = self.tagValue[idx]
-                        max_prob = prob
-
-                # if we couldn't find this word in any of the tags, just return random tag
-                if best_tag is None:
-                    best_tag = self.tagValue[random.randint(0, len(self.tagValue)-1)]
-
+                        max_prob = tag_given_word
                 tags.append(best_tag)
             result.append(tags)
         return result
 
     """
     Calculates P(tag) for each tag
+
+    Input
+    y: list of tags associated with each sentence in training set
     """
 
     def _calculate_tag_probability(self, y):
@@ -135,6 +123,10 @@ class Simple:
     Calculates emission probability: P(Observed|Hidden)
 
     In this case, it calculates probablity of some word occuring given some tag, P(word|tag)
+
+    Input
+    X: list of sentences, where each sentence is list of strings
+    y: list of tags associated with X
     """
 
     def _calculate_emission_probability(self, X, y):
