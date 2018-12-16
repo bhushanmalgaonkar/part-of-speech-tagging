@@ -44,12 +44,6 @@ class NaiveBayes:
         self.transition_2_probability = None
 
     def fit(self, training_data):
-        self._process(training_data)
-
-    def predict(self, testing_data):
-        pass
-
-    def _process(self, training_data):
         # Get all unique tags from training dataset and index both ways
         unique_tags = set()
         for sample in training_data:
@@ -59,6 +53,9 @@ class NaiveBayes:
         self.tagValue = {idx: tag for (tag, idx) in tagIndex.items()}
         self._calculate_emission_probability(training_data)
         self._calculate_transition_1_probability(training_data)
+
+    def predict(self, testing_data):
+        pass
 
     def _calculate_emission_probability(self, training_data):
         self.emission_probability = {}
