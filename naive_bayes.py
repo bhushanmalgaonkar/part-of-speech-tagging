@@ -60,6 +60,7 @@ class NaiveBayes:
 
     def _calculate_emission_probability(self, training_data):
         self.emission_probability = [{} for _ in range(len(self.tagIndex))]
+        # calculate frequency for each word appearing opposite to each tag
         for words, tags in training_data:
             for w, t in zip(words, tags):
                 if w not in self.emission_probability[self.tagIndex[t]]:
