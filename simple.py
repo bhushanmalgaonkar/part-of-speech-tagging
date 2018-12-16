@@ -1,6 +1,7 @@
 from functools import reduce
 import numpy as np
 import math
+import random
 
 
 class Simple:
@@ -56,7 +57,21 @@ class Simple:
 
     def predict(self, X):
         result = []
-
+        for sample in X:
+            tags = []
+            for word in sample:
+                # find tag for word is most likely
+                best_tag = None
+                max_prob = -float('inf')
+                for idx in range(len(self.tagIndex)):
+                    if word in self.emission_probability[idx] and self.emission_probability[idx][word] > max_prob:
+                        best_tag = self.tagValue[idx]
+                        max_prob = self.emission_probability[idx][word]
+                # if we couldn't find this word in any of the tags, just return random tag
+                if best_tag is None:
+                    best_tag = self.tagValue[random.randint(0, len(self.tagValue)-1)]
+                tags.append(best_tag)
+            result.append(tags)
         return result
 
     def _calculate_emission_probability(self, X, y):
@@ -74,8 +89,6 @@ class Simple:
             total = sum(self.emission_probability[idx].values())
             self.emission_probability[idx] = {
                 k: (math.log(v) - math.log(total)) for (k, v) in self.emission_probability[idx].items()}
-
-        print(self.emission_probability)
 
     def _calculate_transition_1_probability(self, training_data):
         pass
