@@ -1,5 +1,6 @@
 from functools import reduce
 import numpy as np
+import math
 
 
 class Simple:
@@ -41,35 +42,40 @@ class Simple:
         """
         self.transition_2_probability = None
 
-    def fit(self, training_data):
+    def fit(self, X, y):
         # Get all unique tags from training dataset and index both ways
         unique_tags = set()
-        for _, tags in training_data:
+        for tags in y:
             unique_tags.update(tags)
 
         self.tagIndex = {tag: idx for (idx, tag) in enumerate(unique_tags)}
         self.tagValue = {idx: tag for (tag, idx) in self.tagIndex.items()}
 
-        self._calculate_emission_probability(training_data)
-        self._calculate_transition_1_probability(training_data)
+        self._calculate_emission_probability(X, y)
+        # self._calculate_transition_1_probability(X, y)
 
-    def predict(self, testing_data):
-        pass
+    def predict(self, X):
+        result = []
 
-    def _calculate_emission_probability(self, training_data):
+        return result
+
+    def _calculate_emission_probability(self, X, y):
         self.emission_probability = [{} for _ in range(len(self.tagIndex))]
         # calculate frequency for each word appearing opposite to each tag
-        for words, tags in training_data:
-            for w, t in zip(words, tags):
+        for idx in range(len(X)):
+            for w, t in zip(X[idx], y[idx]):
                 if w not in self.emission_probability[self.tagIndex[t]]:
                     self.emission_probability[self.tagIndex[t]][w] = 0
                 self.emission_probability[self.tagIndex[t]][w] += 1
 
         # calculate probability using sum of frequencies of words for each tag
+        # keep all calculations in log
         for idx in range(len(self.emission_probability)):
             total = sum(self.emission_probability[idx].values())
             self.emission_probability[idx] = {
-                k: v/total for (k, v) in self.emission_probability[idx].items()}
+                k: (math.log(v) - math.log(total)) for (k, v) in self.emission_probability[idx].items()}
+
+        print(self.emission_probability)
 
     def _calculate_transition_1_probability(self, training_data):
         pass

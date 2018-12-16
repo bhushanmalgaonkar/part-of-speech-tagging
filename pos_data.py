@@ -22,7 +22,7 @@ list[
 
 
 def read(filepath):
-    data = []
+    X, y = [], []
     if not os.path.exists(filepath):
         return data
 
@@ -32,5 +32,6 @@ def read(filepath):
             if len(split) % 2 != 0:
                 raise Exception(
                     f"Invalid sample on line {i}: Number of words and tags do not match")
-            data.append((split[::2], split[1::2]))
-    return data
+            X.append(split[::2])
+            y.append(split[1::2])
+    return X, y
