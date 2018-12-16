@@ -46,11 +46,12 @@ class NaiveBayes:
     def fit(self, training_data):
         # Get all unique tags from training dataset and index both ways
         unique_tags = set()
-        for sample in training_data:
-            unique_tags.update(sample[1])
+        for _, tags in training_data:
+            unique_tags.update(tags)
 
         self.tagIndex = {tag: idx for (idx, tag) in enumerate(unique_tags)}
-        self.tagValue = {idx: tag for (tag, idx) in tagIndex.items()}
+        self.tagValue = {idx: tag for (tag, idx) in self.tagIndex.items()}
+
         self._calculate_emission_probability(training_data)
         self._calculate_transition_1_probability(training_data)
 
@@ -58,7 +59,18 @@ class NaiveBayes:
         pass
 
     def _calculate_emission_probability(self, training_data):
-        self.emission_probability = {}
+        self.emission_probability = [{} for _ in range(len(self.tagIndex))]
+        for words, tags in training_data:
+            for w, t in zip(words, tags):
+                if w not in self.emission_probability[self.tagIndex[t]]:
+                    self.emission_probability[self.tagIndex[t]][w] = 0
+                self.emission_probability[self.tagIndex[t]][w] += 1
+
+        # calculate probability using sum of frequencies of words for each tag
+        for idx in range(len(self.emission_probability)):
+            total = sum(self.emission_probability[idx].values())
+            self.emission_probability[idx] = {
+                k: v/total for (k, v) in self.emission_probability[idx].items()}
 
     def _calculate_transition_1_probability(self, training_data):
         pass
@@ -69,3 +81,6 @@ class NaiveBayes:
 
 train = read('data/bc.train')
 test = read('data/bc.test')
+
+nb = NaiveBayes()
+nb.fit(train)
