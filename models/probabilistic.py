@@ -1,17 +1,17 @@
-from functools import reduce
-import numpy as np
 import math
-import random
-
-"""
-Simple model
-
-The tag entirely depends on the word itself, so we can choose tag for a given word such that P(tag|word) is maximum.
-P(tag|word) = P(word|tag) * P(tag), these two probabilities can be calculated from the data
-"""
 
 
-class Simple:
+class Probabilistic:
+    # methods to override
+
+    def fit(self, X, y):
+        pass
+
+    def predict(self, X):
+        pass
+
+    # end of methods to override
+
     def __init__(self):
         """
         Stores numerical index for each tag
@@ -49,14 +49,13 @@ class Simple:
         self.MISSING_WORD_PROBABILITY = math.log(10e-9)
 
     """
-    Calculates all the probabilities required for the model to predict new sentences
+    Finds all the unique tags from given list and generates 2 dictionaries: tag->index, index->tag
 
     Input
-    X: list of sentences, where each sentence is list of strings
-    y: list of tags associated with X
+    y: list of tags associated with each sentence in training set
     """
 
-    def fit(self, X, y):
+    def _fetch_tags(self, y):
         # Get all unique tags from training dataset and index both ways
         unique_tags = set()
         for tags in y:
@@ -64,40 +63,6 @@ class Simple:
 
         self.tagIndex = {tag: idx for (idx, tag) in enumerate(unique_tags)}
         self.tagValue = {idx: tag for (tag, idx) in self.tagIndex.items()}
-
-        self._calculate_tag_probability(y)
-        self._calculate_emission_probability(X, y)
-
-    """
-    Calculates best tag for each word of each sentence using P(tag|word) = P(word|tag) * P(tag)
-
-    Input
-    X: list of sentences, where each sentence is list of strings
-
-    Output
-    list of tags
-    """
-
-    def predict(self, X):
-        result = []
-        for sample in X:
-            tags = []
-            for word in sample:
-                # find tag for word is most likely
-                best_tag = None
-                max_prob = -float('inf')
-                for idx in range(len(self.tagIndex)):
-                    word_given_tag = self.emission_probability[idx][
-                        word] if word in self.emission_probability[idx] else self.MISSING_WORD_PROBABILITY
-
-                    # P(tag|word) = P(word|tag) * P(tag)
-                    tag_given_word = word_given_tag + self.tag_probability[idx]
-                    if tag_given_word > max_prob:
-                        best_tag = self.tagValue[idx]
-                        max_prob = tag_given_word
-                tags.append(best_tag)
-            result.append(tags)
-        return result
 
     """
     Calculates P(tag) for each tag

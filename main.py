@@ -1,5 +1,5 @@
 from pos_data import read
-from simple import Simple
+from models.simple import Simple
 from metrics import print_report
 
 
