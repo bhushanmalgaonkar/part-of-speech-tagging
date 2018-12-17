@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 
 class Probabilistic:
@@ -48,20 +49,36 @@ class Probabilistic:
         E.g. probablity of verb being followed by noun, P(tag_i|tag_i-1)
 
         Structure:
-
+        [
+            tag_i=0: [
+                tag_i-1=0, tag_i-1=1, ...
+            ],
+            ...
+        ]
         """
         self.transition_1_probability = None
 
         """
         Transition probability 2 is the probability of having some hidden variable given values of 2 previous hidden variables.
         E.g. probablity of noun -> verb -> adjective, P(tag_i|tag_i-1, tag_i-2)
+
+        Structure:
+        [
+            tag_i=0: [
+                tag_i-1=0: [
+                    tag_i-2=0, tag_i-2=1, ...
+                ],
+                tag_i-1=1, ...
+            ],
+            ...
+        ]
         """
         self.transition_2_probability = None
 
         """
         Constants
         """
-        self.MISSING_WORD_PROBABILITY = math.log(10e-9)
+        self.MISSING_WORD_PROBABILITY = 10e-9
 
     """
     Finds all the unique tags from given list and generates 2 dictionaries: tag->index, index->tag
@@ -136,7 +153,24 @@ class Probabilistic:
     """
 
     def _calculate_transition_1_probability(self, y):
-        pass
+        self.transition_1_probability = np.zeros((len(self.tagIndex), len(self.tagIndex)))
+        for sample in y:
+            for idx in range(1, len(sample)):
+                self.transition_1_probability[self.tagIndex[sample[idx]],
+                                              self.tagIndex[sample[idx - 1]]] += 1
+
+        # divide by sum to get probabilities
+        total = np.sum(self.transition_1_probability, axis=0)
+        # to avoid 0/0 errors
+        total[total == 0] = np.inf
+        self.transition_1_probability /= total
+
+        # give small probability for missing word, so that while testing if this pair appears the probability of tags decreses but does not become 0
+        self.transition_1_probability[self.transition_1_probability ==
+                                      0] = self.MISSING_WORD_PROBABILITY
+
+        # keep calculations in log
+        self.transition_1_probability = np.log(self.transition_1_probability)
 
     """
     Calculates transition probability: P(hidden_t|hidden_t-1,hidden_t-2)
@@ -148,4 +182,22 @@ class Probabilistic:
     """
 
     def _calculate_transition_2_probability(self, y):
-        pass
+        self.transition_2_probability = np.zeros(
+            (len(self.tagIndex), len(self.tagIndex), len(self.tagIndex)))
+        for sample in y:
+            for idx in range(2, len(sample)):
+                self.transition_2_probability[self.tagIndex[sample[idx]],
+                                              self.tagIndex[sample[idx - 1]], self.tagIndex[sample[idx - 2]]] += 1
+
+        # divide by sum to get probabilities
+        total = np.sum(self.transition_2_probability, axis=0)
+        # to avoid 0/0 errors
+        total[total == 0] = np.inf
+        self.transition_2_probability /= total
+
+        # give small probability for missing word, so that while testing if this pair appears the probability of tags decreses but does not become 0
+        self.transition_2_probability[self.transition_2_probability ==
+                                      0] = self.MISSING_WORD_PROBABILITY
+
+        # keep calculations in log
+        self.transition_2_probability = np.log(self.transition_2_probability)

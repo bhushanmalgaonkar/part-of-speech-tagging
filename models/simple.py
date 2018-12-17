@@ -50,7 +50,7 @@ class Simple(Probabilistic):
                 max_prob = -float('inf')
                 for idx in range(len(self.tagIndex)):
                     word_given_tag = self.emission_probability[idx][
-                        word] if word in self.emission_probability[idx] else self.MISSING_WORD_PROBABILITY
+                        word] if word in self.emission_probability[idx] else math.log(self.MISSING_WORD_PROBABILITY)
 
                     # P(tag|word) = P(word|tag) * P(tag)
                     tag_given_word = word_given_tag + self.tag_probability[idx]
