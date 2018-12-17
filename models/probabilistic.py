@@ -90,28 +90,57 @@ class Probabilistic:
         self.MISSING_TRANSITION_2_COST = -np.log(10e-9)
 
     # Wrapper functions to handle errors and missing values
+
+    """
+    Input
+    tag: index of the tag
+    word: string
+
+    Output
+    emission cost P(word|tag)
+    """
+
     def get_emission_cost(self, tag, word):
-        if tag not in self.tagIndex:
+        if tag >= len(self.tagIndex):
             raise Exception(f"Invalid tag: {tag}")
 
-        if word in self.emission_cost[self.tagIndex(tag)]:
-            return self.emission_cost[self.tagIndex(tag)][word]
+        if word in self.emission_cost[tag]:
+            return self.emission_cost[tag][word]
         return self.MISSING_EMISSION_COST
 
+    """
+    Input
+    tag_i: index of tag
+    tag_i_1: index of previous tag
+
+    Output
+    transition cost tag_i_1 -> tag_i: P(tag_i|tag_i_1)
+    """
+
     def get_transition_1_cost(self, tag_i, tag_i_1):
-        if tag_i not in self.tagIndex:
+        if tag_i >= len(self.tagIndex):
             raise Exception(f"Invalid tag: {tag_i}")
-        if tag_i_1 not in self.tagIndex:
+        if tag_i_1 >= len(self.tagIndex):
             raise Exception(f"Invalid tag: {tag_i_1}")
 
         return self.transition_1_cost[tag_i][tag_i_1]
 
+    """
+    Input
+    tag_i: index of tag
+    tag_i_1: index of previous tag
+    tag_i_2: index of previous to previous tag
+
+    Output
+    transition cost tag_i_2 -> tag_i_1 -> tag_i: P(tag_i|tag_i_1, tag_i_2)
+    """
+
     def get_transition_2_cost(self, tag_i, tag_i_1, tag_i_2):
-        if tag_i not in self.tagIndex:
+        if tag_i >= len(self.tagIndex):
             raise Exception(f"Invalid tag: {tag_i}")
-        if tag_i_1 not in self.tagIndex:
+        if tag_i_1 >= len(self.tagIndex):
             raise Exception(f"Invalid tag: {tag_i_1}")
-        if tag_i_2 not in self.tagIndex:
+        if tag_i_2 >= len(self.tagIndex):
             raise Exception(f"Invalid tag: {tag_i_2}")
 
         return self.transition_2_cost[tag_i][tag_i_1][tag_i_2]
