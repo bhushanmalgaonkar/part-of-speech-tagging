@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from pos_data import read
 from models.simple import Simple
 from models.hmm import HMM

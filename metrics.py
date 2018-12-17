@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Prints different accuracy measures
 """
