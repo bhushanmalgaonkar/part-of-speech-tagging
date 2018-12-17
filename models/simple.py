@@ -49,11 +49,8 @@ class Simple(Probabilistic):
                 best_tag = None
                 min_cost = float('inf')
                 for idx in range(len(self.tagIndex)):
-                    word_given_tag = self.emission_cost[idx][
-                        word] if word in self.emission_cost[idx] else self.MISSING_WORD_COST
-
                     # P(tag|word) = P(word|tag) * P(tag)
-                    tag_given_word = word_given_tag + self.tag_cost[idx]
+                    tag_given_word = self.get_emission_cost(idx, word) + self.tag_cost[idx]
                     if tag_given_word < min_cost:
                         best_tag = self.tagValue[idx]
                         min_cost = tag_given_word
