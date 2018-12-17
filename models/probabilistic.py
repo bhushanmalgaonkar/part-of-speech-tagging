@@ -44,6 +44,21 @@ class Probabilistic:
         self.emission_probability = None
 
         """
+        Transition probability 1 is the probability of having some hidden variable next to some other hidden variable.
+        E.g. probablity of verb being followed by noun, P(tag_i|tag_i-1)
+
+        Structure:
+
+        """
+        self.transition_1_probability = None
+
+        """
+        Transition probability 2 is the probability of having some hidden variable given values of 2 previous hidden variables.
+        E.g. probablity of noun -> verb -> adjective, P(tag_i|tag_i-1, tag_i-2)
+        """
+        self.transition_2_probability = None
+
+        """
         Constants
         """
         self.MISSING_WORD_PROBABILITY = math.log(10e-9)
@@ -110,3 +125,27 @@ class Probabilistic:
             total = sum(self.emission_probability[idx].values())
             self.emission_probability[idx] = {
                 k: (math.log(v) - math.log(total)) for (k, v) in self.emission_probability[idx].items()}
+
+    """
+    Calculates transition probability: P(hidden_t|hidden_t-1)
+
+    In this case, it calculates probablity of some tag given previous tag, P(tag_t|tag_t-1)
+
+    Input
+    y: list of tags associated with X
+    """
+
+    def _calculate_transition_1_probability(self, y):
+        pass
+
+    """
+    Calculates transition probability: P(hidden_t|hidden_t-1,hidden_t-2)
+
+    In this case, it calculates probablity of some tag given sequence of 2 previous tag, P(tag_t|tag_t-1,tag_t-2)
+
+    Input
+    y: list of tags associated with X
+    """
+
+    def _calculate_transition_2_probability(self, y):
+        pass
