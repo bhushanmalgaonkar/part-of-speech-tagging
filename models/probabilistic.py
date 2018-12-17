@@ -235,7 +235,7 @@ class Probabilistic:
         self.transition_1_cost[self.transition_1_cost == 0] = self.MISSING_WORD_PROBABILITY
 
         # keep calculations in log
-        self.transition_1_cost = np.log(self.transition_1_cost)
+        self.transition_1_cost = -np.log(self.transition_1_cost)
 
     """
     Calculates negative log of transition probability: -log(P(hidden_t|hidden_t-1,hidden_t-2))
