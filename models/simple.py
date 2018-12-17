@@ -27,8 +27,8 @@ class Simple(Probabilistic):
 
     def fit(self, X, y):
         self._fetch_tags(y)
-        self._calculate_tag_probability(y)
-        self._calculate_emission_probability(X, y)
+        self._calculate_tag_cost(y)
+        self._calculate_emission_cost(X, y)
 
     """
     Calculates best tag for each word of each sentence using P(tag|word) = P(word|tag) * P(tag)
@@ -47,16 +47,16 @@ class Simple(Probabilistic):
             for word in sample:
                 # find tag for word is most likely
                 best_tag = None
-                max_prob = -float('inf')
+                min_cost = float('inf')
                 for idx in range(len(self.tagIndex)):
-                    word_given_tag = self.emission_probability[idx][
-                        word] if word in self.emission_probability[idx] else math.log(self.MISSING_WORD_PROBABILITY)
+                    word_given_tag = self.emission_cost[idx][
+                        word] if word in self.emission_cost[idx] else self.MISSING_WORD_COST
 
                     # P(tag|word) = P(word|tag) * P(tag)
-                    tag_given_word = word_given_tag + self.tag_probability[idx]
-                    if tag_given_word > max_prob:
+                    tag_given_word = word_given_tag + self.tag_cost[idx]
+                    if tag_given_word < min_cost:
                         best_tag = self.tagValue[idx]
-                        max_prob = tag_given_word
+                        min_cost = tag_given_word
                 tags.append(best_tag)
             result.append(tags)
         return result

@@ -27,12 +27,12 @@ class Probabilistic:
         self.tagValue = None
 
         """
-        Probability that any randomly chosen word will have particular tag, P(tag)
+        Negative log of probability that any randomly chosen word will have particular tag, -log(P(tag))
         """
-        self.tag_probability = None
+        self.tag_cost = None
 
         """
-        Emission probability is the probability of having some observed variable given some value of hidden variable.
+        Emission cost is the negative log of probability of having some observed variable given some value of hidden variable.
         In this case, it would be probability of certain word given certain pos tag, P(word_i|tag_i)
 
         Structure:
@@ -42,10 +42,10 @@ class Probabilistic:
             ...
         ]
         """
-        self.emission_probability = None
+        self.emission_cost = None
 
         """
-        Transition probability 1 is the probability of having some hidden variable next to some other hidden variable.
+        Transition 1 cost is the negative log of probability of having some hidden variable next to some other hidden variable.
         E.g. probablity of verb being followed by noun, P(tag_i|tag_i-1)
 
         Structure:
@@ -56,10 +56,10 @@ class Probabilistic:
             ...
         ]
         """
-        self.transition_1_probability = None
+        self.transition_1_cost = None
 
         """
-        Transition probability 2 is the probability of having some hidden variable given values of 2 previous hidden variables.
+        Transition 2 cost is the negative log of probability of having some hidden variable given values of 2 previous hidden variables.
         E.g. probablity of noun -> verb -> adjective, P(tag_i|tag_i-1, tag_i-2)
 
         Structure:
@@ -73,12 +73,18 @@ class Probabilistic:
             ...
         ]
         """
-        self.transition_2_probability = None
+        self.transition_2_cost = None
+
+        """
+        Negative log of probability of sentence beginning with particular tag. Array of length same as tags
+        """
+        self.beginning_cost = None
 
         """
         Constants
         """
         self.MISSING_WORD_PROBABILITY = 10e-9
+        self.MISSING_WORD_COST = -np.log(self.MISSING_WORD_PROBABILITY)
 
     """
     Finds all the unique tags from given list and generates 2 dictionaries: tag->index, index->tag
@@ -97,13 +103,13 @@ class Probabilistic:
         self.tagValue = {idx: tag for (tag, idx) in self.tagIndex.items()}
 
     """
-    Calculates P(tag) for each tag
+    Calculates -log(P(tag)) for each tag
 
     Input
     y: list of tags associated with each sentence in training set
     """
 
-    def _calculate_tag_probability(self, y):
+    def _calculate_tag_cost(self, y):
         count = [0 for _ in range(len(self.tagIndex))]
 
         # calculate frequency for each word appearing opposite to each tag
@@ -114,90 +120,102 @@ class Probabilistic:
         # calculate probability using sum of frequencies of each tag
         # keep all calculations in log
         log_total = math.log(sum(count))
-        self.tag_probability = [(math.log(c) - log_total) for c in count]
+        self.tag_cost = [-(math.log(c) - log_total) for c in count]
 
     """
-    Calculates emission probability: P(Observed|Hidden)
+    Calculates negative log of emission probability: -log(P(Observed|Hidden))
 
-    In this case, it calculates probablity of some word occuring given some tag, P(word|tag)
+    In this case, it calculates probablity of some word occuring given some tag, -log(P(word|tag))
 
     Input
     X: list of sentences, where each sentence is list of strings
     y: list of tags associated with X
     """
 
-    def _calculate_emission_probability(self, X, y):
-        self.emission_probability = [{} for _ in range(len(self.tagIndex))]
+    def _calculate_emission_cost(self, X, y):
+        self.emission_cost = [{} for _ in range(len(self.tagIndex))]
 
         # calculate frequency for each word appearing opposite to each tag
         for idx in range(len(X)):
             for w, t in zip(X[idx], y[idx]):
-                if w not in self.emission_probability[self.tagIndex[t]]:
-                    self.emission_probability[self.tagIndex[t]][w] = 0
-                self.emission_probability[self.tagIndex[t]][w] += 1
+                if w not in self.emission_cost[self.tagIndex[t]]:
+                    self.emission_cost[self.tagIndex[t]][w] = 0
+                self.emission_cost[self.tagIndex[t]][w] += 1
 
         # calculate probability using sum of frequencies of words for each tag
         # keep all calculations in log
-        for idx in range(len(self.emission_probability)):
-            total = sum(self.emission_probability[idx].values())
-            self.emission_probability[idx] = {
-                k: (math.log(v) - math.log(total)) for (k, v) in self.emission_probability[idx].items()}
+        for idx in range(len(self.emission_cost)):
+            total = sum(self.emission_cost[idx].values())
+            self.emission_cost[idx] = {
+                k: -(math.log(v) - math.log(total)) for (k, v) in self.emission_cost[idx].items()}
 
     """
-    Calculates transition probability: P(hidden_t|hidden_t-1)
+    Calculates negative log of transition probability: -log(P(hidden_t|hidden_t-1))
 
-    In this case, it calculates probablity of some tag given previous tag, P(tag_t|tag_t-1)
+    In this case, it calculates probablity of some tag given previous tag, -log(P(tag_t|tag_t-1))
 
     Input
     y: list of tags associated with X
     """
 
-    def _calculate_transition_1_probability(self, y):
-        self.transition_1_probability = np.zeros((len(self.tagIndex), len(self.tagIndex)))
+    def _calculate_transition_1_cost(self, y):
+        self.transition_1_cost = np.zeros((len(self.tagIndex), len(self.tagIndex)))
         for sample in y:
             for idx in range(1, len(sample)):
-                self.transition_1_probability[self.tagIndex[sample[idx]],
-                                              self.tagIndex[sample[idx - 1]]] += 1
+                self.transition_1_cost[self.tagIndex[sample[idx]],
+                                       self.tagIndex[sample[idx - 1]]] += 1
 
         # divide by sum to get probabilities
-        total = np.sum(self.transition_1_probability, axis=0)
+        total = np.sum(self.transition_1_cost, axis=0)
         # to avoid 0/0 errors
         total[total == 0] = np.inf
-        self.transition_1_probability /= total
+        self.transition_1_cost /= total
 
         # give small probability for missing word, so that while testing if this pair appears the probability of tags decreses but does not become 0
-        self.transition_1_probability[self.transition_1_probability ==
-                                      0] = self.MISSING_WORD_PROBABILITY
+        self.transition_1_cost[self.transition_1_cost == 0] = self.MISSING_WORD_PROBABILITY
 
         # keep calculations in log
-        self.transition_1_probability = np.log(self.transition_1_probability)
+        self.transition_1_cost = np.log(self.transition_1_cost)
 
     """
-    Calculates transition probability: P(hidden_t|hidden_t-1,hidden_t-2)
+    Calculates negative log of transition probability: -log(P(hidden_t|hidden_t-1,hidden_t-2))
 
-    In this case, it calculates probablity of some tag given sequence of 2 previous tag, P(tag_t|tag_t-1,tag_t-2)
+    In this case, it calculates probablity of some tag given sequence of 2 previous tag, -log(P(tag_t|tag_t-1,tag_t-2))
 
     Input
     y: list of tags associated with X
     """
 
-    def _calculate_transition_2_probability(self, y):
-        self.transition_2_probability = np.zeros(
+    def _calculate_transition_2_cost(self, y):
+        self.transition_2_cost = np.zeros(
             (len(self.tagIndex), len(self.tagIndex), len(self.tagIndex)))
         for sample in y:
             for idx in range(2, len(sample)):
-                self.transition_2_probability[self.tagIndex[sample[idx]],
-                                              self.tagIndex[sample[idx - 1]], self.tagIndex[sample[idx - 2]]] += 1
+                self.transition_2_cost[self.tagIndex[sample[idx]],
+                                       self.tagIndex[sample[idx - 1]], self.tagIndex[sample[idx - 2]]] += 1
 
         # divide by sum to get probabilities
-        total = np.sum(self.transition_2_probability, axis=0)
+        total = np.sum(self.transition_2_cost, axis=0)
         # to avoid 0/0 errors
         total[total == 0] = np.inf
-        self.transition_2_probability /= total
+        self.transition_2_cost /= total
 
         # give small probability for missing word, so that while testing if this pair appears the probability of tags decreses but does not become 0
-        self.transition_2_probability[self.transition_2_probability ==
-                                      0] = self.MISSING_WORD_PROBABILITY
+        self.transition_2_cost[self.transition_2_cost == 0] = self.MISSING_WORD_PROBABILITY
 
         # keep calculations in log
-        self.transition_2_probability = np.log(self.transition_2_probability)
+        self.transition_2_cost = -np.log(self.transition_2_cost)
+
+    def _calculate_beginning_cost(self, y):
+        self.beginning_cost = np.zeros(len(self.tagIndex))
+        for sample in y:
+            self.beginning_cost[self.tagIndex[sample[0]]] += 1
+
+        # divide by sum to get probabilities
+        self.beginning_cost /= np.sum(self.beginning_cost)
+
+        # small probability for missing
+        self.beginning_cost[self.beginning_cost == 0] = self.MISSING_WORD_PROBABILITY
+
+        # convert to cost
+        self.beginning_cost = -np.log(self.beginning_cost)
