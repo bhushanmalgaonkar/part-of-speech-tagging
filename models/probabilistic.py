@@ -80,9 +80,7 @@ class Probabilistic:
         """
         self.beginning_cost = None
 
-        """
-        Hyperparameters
-        """
+        # Hyperparameters
         self.MISSING_WORD_PROBABILITY = 10e-9
         self.MISSING_WORD_COST = -np.log(self.MISSING_WORD_PROBABILITY)
         self.MISSING_EMISSION_COST = -np.log(10e-9)

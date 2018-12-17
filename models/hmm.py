@@ -4,7 +4,10 @@ from models.probabilistic import Probabilistic
 
 
 """
+The tag depends on word as well as previous tag
 
+Optimizes P(tag_1, tag_2, ... tag_n|word_1, word_2, ... word_n)
+    = P(tag_1) * P(tag_2|tag_1) * ... * P(tag_n|tag_n-1) * P(word_1|tag_1) * ... * P(word_n|tag_n)
 """
 
 
@@ -48,6 +51,7 @@ class HMM(Probabilistic):
             cost[0, :] += [self.get_emission_cost(idx, sample[0])
                            for idx in range(len(self.tagIndex))]
 
+            # fill the dp table
             for wi in range(1, len(sample)):
                 for ti in range(len(self.tagIndex)):
                     for pti in range(len(self.tagIndex)):
@@ -64,5 +68,6 @@ class HMM(Probabilistic):
                         tags[wi - 1] = pti
                         break
 
+            # return list of tags associated with indexes
             result.append([self.tagValue[t] for t in tags])
         return result
