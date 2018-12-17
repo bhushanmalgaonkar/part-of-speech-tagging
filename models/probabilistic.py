@@ -81,10 +81,41 @@ class Probabilistic:
         self.beginning_cost = None
 
         """
-        Constants
+        Hyperparameters
         """
         self.MISSING_WORD_PROBABILITY = 10e-9
         self.MISSING_WORD_COST = -np.log(self.MISSING_WORD_PROBABILITY)
+        self.MISSING_EMISSION_COST = -np.log(10e-9)
+        self.MISSING_TRANSITION_1_COST = -np.log(10e-9)
+        self.MISSING_TRANSITION_2_COST = -np.log(10e-9)
+
+    # Wrapper functions to handle errors and missing values
+    def get_emission_cost(self, tag, word):
+        if tag not in self.tagIndex:
+            raise Exception(f"Invalid tag: {tag}")
+
+        if word in self.emission_cost[self.tagIndex(tag)]:
+            return self.emission_cost[self.tagIndex(tag)][word]
+        return self.MISSING_EMISSION_COST
+
+    def get_transition_1_cost(self, tag_i, tag_i_1):
+        if tag_i not in self.tagIndex:
+            raise Exception(f"Invalid tag: {tag_i}")
+        if tag_i_1 not in self.tagIndex:
+            raise Exception(f"Invalid tag: {tag_i_1}")
+
+        return self.transition_1_cost[tag_i][tag_i_1]
+
+    def get_transition_2_cost(self, tag_i, tag_i_1, tag_i_2):
+        if tag_i not in self.tagIndex:
+            raise Exception(f"Invalid tag: {tag_i}")
+        if tag_i_1 not in self.tagIndex:
+            raise Exception(f"Invalid tag: {tag_i_1}")
+        if tag_i_2 not in self.tagIndex:
+            raise Exception(f"Invalid tag: {tag_i_2}")
+
+        return self.transition_2_cost[tag_i][tag_i_1][tag_i_2]
+    # End of Wrapper functions to handle errors and missing values
 
     """
     Finds all the unique tags from given list and generates 2 dictionaries: tag->index, index->tag
