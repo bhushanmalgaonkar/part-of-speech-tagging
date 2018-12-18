@@ -2,6 +2,8 @@
 
 import math
 from time import time
+import pandas as pd
+import os
 
 from pos_data import read
 from models.simple import Simple
@@ -23,11 +25,22 @@ X_val, y_val = read('data/bc.val', 'train')
 # y_pred = hm.predict(X_val)
 # print_report(y_val, y_pred)
 
+done = 0
+if os.path.exists('out.txt'):
+    df = pd.read_csv('out.txt')
+    done = len(df)
+
+count = 0
 for missing_word_cost in [10e-6, 10e-9, 10e-11, 10e-13]:
     for missing_emission_cost in [10e-6, 10e-9, 10e-11, 10e-13]:
         for missing_transition_1_cost in [10e-6, 10e-9, 10e-11, 10e-13]:
             for missing_transition_2_cost in [10e-6, 10e-9, 10e-11, 10e-13]:
                 for gibbs in [10, 20, 50, 100, 150]:
+                    print(count)
+                    if count < done:
+                        count += 1
+                        continue
+
                     st = time()
 
                     cp = Complex()
@@ -41,12 +54,16 @@ for missing_word_cost in [10e-6, 10e-9, 10e-11, 10e-13]:
                     cp.fit(X_train, y_train)
                     y_pred = cp.predict(X_val)
 
-                    with open('out.txt', 'a') as f:
-                        f.write('{:50s}: {}\n'.format('Missing word', missing_word_cost))
-                        f.write('{:50s}: {}\n'.format('Missing emission', missing_emission_cost))
-                        f.write('{:50s}: {}\n'.format('Missing transition 1', missing_transition_1_cost))
-                        f.write('{:50s}: {}\n'.format('Missing transition 2', missing_transition_2_cost))
-                        f.write('{:50s}: {}\n'.format('Gibbs samples', gibbs))
+                    data = print_report(y_val, y_pred)
+                    data['index'] = count
+                    data['Missing word'] = missing_word_cost
+                    data['Missing emission'] = missing_emission_cost
+                    data['Missing transition 1'] = missing_transition_1_cost
+                    data['Missing transition 2'] = missing_transition_2_cost
+                    data['Gibbs samples'] = gibbs
+                    data['Time taken'] = int(time() - st)
+                    count += 1
 
-                        f.write(print_report(y_val, y_pred))
-                        f.write('{:50s}: {}\n\n'.format('Time taken', int(time() - st)))
+                    df = pd.read_csv('out.txt')
+                    df = df.append(data, ignore_index=True)
+                    df.to_csv('out.txt', index=False)

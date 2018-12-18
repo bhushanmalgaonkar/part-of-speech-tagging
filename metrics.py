@@ -36,12 +36,12 @@ def print_report(y_actual, y_pred):
             if len(ya) > longest_correct:
                 longest_correct = len(ya)
 
-    report = ''
-    report += '{:50s}: {:.2f}%\n'.format('Sentences correct', sentences_correct/sentences_total*100)
-    report += '{:50s}: {:.2f}%\n'.format('Words correct', words_correct/words_total*100)
-    report += '{:50s}: {:.2f}\n'.format('Average length of sentence', words_total/sentences_total)
-    report += '{:50s}: {:.2f}\n'.format('Average length of sentence correctly predicted',
-                                  words_correct_all/sentences_total)
-    report += '{:50s}: {}\n'.format('Length of longest sentence correctly predicted', longest_correct)
+    report = {}
+    report['Sentences correct'] = round(sentences_correct/sentences_total*100, 2)
+    report['Words correct'] = round(words_correct/words_total*100, 2)
+    report['Average length of sentence'] = round(words_total/sentences_total, 2)
+    report['Average length of sentence correctly predicted'] = round(
+        words_correct_all/sentences_total, 2)
+    report['Length of longest sentence correctly predicted'] = longest_correct
 
     return report
