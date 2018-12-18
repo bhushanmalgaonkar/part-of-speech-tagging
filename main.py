@@ -41,12 +41,12 @@ for missing_word_cost in [10e-6, 10e-9, 10e-11, 10e-13]:
                     cp.fit(X_train, y_train)
                     y_pred = cp.predict(X_val)
 
-                    print('{:50s}: {}'.format('Missing word', missing_word_cost))
-                    print('{:50s}: {}'.format('Missing emission', missing_emission_cost))
-                    print('{:50s}: {}'.format('Missing transition 1', missing_transition_1_cost))
-                    print('{:50s}: {}'.format('Missing transition 2', missing_transition_2_cost))
-                    print('{:50s}: {}'.format('Gibbs samples', gibbs))
+                    with open('out.txt', 'a') as f:
+                        f.write('{:50s}: {}\n'.format('Missing word', missing_word_cost))
+                        f.write('{:50s}: {}\n'.format('Missing emission', missing_emission_cost))
+                        f.write('{:50s}: {}\n'.format('Missing transition 1', missing_transition_1_cost))
+                        f.write('{:50s}: {}\n'.format('Missing transition 2', missing_transition_2_cost))
+                        f.write('{:50s}: {}\n'.format('Gibbs samples', gibbs))
 
-                    print_report(y_val, y_pred)
-                    print('{:50s}: {}'.format('Time taken', int(time() - st)))
-                    print()
+                        f.write(print_report(y_val, y_pred))
+                        f.write('{:50s}: {}\n\n'.format('Time taken', int(time() - st)))
