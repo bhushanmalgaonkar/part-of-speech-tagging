@@ -52,7 +52,7 @@ list[
 
 def read(filepath, mode):
     if mode not in ['train', 'test']:
-        raise Exception(f'Invalid mode {mode}. Use \'train\' or \'test\'')
+        raise Exception('Invalid mode {}. Use \'train\' or \'test\''.format(mode))
 
     X, y = [], []
     if not os.path.exists(filepath):
@@ -63,8 +63,7 @@ def read(filepath, mode):
             split = line.lower().split()
             if mode == 'train':
                 if len(split) % 2 != 0:
-                    raise Exception(
-                        f"Invalid sample on line {i}: Number of words and tags do not match")
+                    raise Exception("Invalid sample on line {}: Number of words and tags do not match".format(i))
                 X.append(split[::2])
                 y.append(split[1::2])
             elif mode == 'test':

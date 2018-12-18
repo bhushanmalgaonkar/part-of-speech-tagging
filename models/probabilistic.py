@@ -102,7 +102,7 @@ class Probabilistic:
 
     def get_emission_cost(self, tag, word):
         if tag >= len(self.tagIndex):
-            raise Exception(f"Invalid tag: {tag}")
+            raise Exception("Invalid tag: {}".format(tag))
 
         if word in self.emission_cost[tag]:
             return self.emission_cost[tag][word]
@@ -119,9 +119,9 @@ class Probabilistic:
 
     def get_transition_1_cost(self, tag_i, tag_i_1):
         if tag_i >= len(self.tagIndex):
-            raise Exception(f"Invalid tag: {tag_i}")
+            raise Exception("Invalid tag: {}".format(tag_i))
         if tag_i_1 >= len(self.tagIndex):
-            raise Exception(f"Invalid tag: {tag_i_1}")
+            raise Exception("Invalid tag: {}".format(tag_i_1))
 
         return self.transition_1_cost[tag_i][tag_i_1]
 
@@ -137,11 +137,11 @@ class Probabilistic:
 
     def get_transition_2_cost(self, tag_i, tag_i_1, tag_i_2):
         if tag_i >= len(self.tagIndex):
-            raise Exception(f"Invalid tag: {tag_i}")
+            raise Exception("Invalid tag: {}".format(tag_i))
         if tag_i_1 >= len(self.tagIndex):
-            raise Exception(f"Invalid tag: {tag_i_1}")
+            raise Exception("Invalid tag: {}".format(tag_i_1))
         if tag_i_2 >= len(self.tagIndex):
-            raise Exception(f"Invalid tag: {tag_i_2}")
+            raise Exception("Invalid tag: {}".format(tag_i_2))
 
         return self.transition_2_cost[tag_i][tag_i_1][tag_i_2]
     # End of Wrapper functions to handle errors and missing values
