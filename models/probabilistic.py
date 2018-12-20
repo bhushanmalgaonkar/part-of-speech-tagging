@@ -83,11 +83,11 @@ class Probabilistic:
         self.beginning_cost = None
 
         # Hyperparameters
-        self.MISSING_WORD_PROBABILITY = 10e-9
+        self.MISSING_WORD_PROBABILITY = 10e-5
         self.MISSING_WORD_COST = -np.log(self.MISSING_WORD_PROBABILITY)
-        self.MISSING_EMISSION_COST = -np.log(10e-9)
-        self.MISSING_TRANSITION_1_COST = -np.log(10e-9)
-        self.MISSING_TRANSITION_2_COST = -np.log(10e-9)
+        self.MISSING_EMISSION_COST = -np.log(10e-8)
+        self.MISSING_TRANSITION_1_COST = -np.log(10e-12)
+        self.MISSING_TRANSITION_2_COST = -np.log(10e-12)
 
     # Wrapper functions to handle errors and missing values
 

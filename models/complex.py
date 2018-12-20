@@ -20,7 +20,7 @@ class Complex(Probabilistic):
         Probabilistic.__init__(self)
 
         # Hyperparameters
-        self.NUM_GIBBS_ITER = 10
+        self.NUM_GIBBS_ITER = 150
 
     """
     Calculates all the probabilities required for the model to predict new sentences
