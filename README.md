@@ -8,7 +8,7 @@ Average length of sentence in test set            : 14.72 <br/>
 Average length of sentence correctly predicted    : 5.17 <br/>
 Length of longest sentence correctly predicted    : 48 <br/><br/>
 
-## Hidden Marcov Model with Viberbi Decoding
+## Hidden Markov Model with Viberbi Decoding
 ![hmm](https://user-images.githubusercontent.com/6957870/50178459-918f8300-02d2-11e9-8f63-716a05c55036.png) <br/>
 Sentences correctly predicted                     : 54.50% <br/>
 Words correctly predicted                         : 95.07% <br/>
